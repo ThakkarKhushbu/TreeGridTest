@@ -83,7 +83,7 @@ $page = isset($_GET['page']) && $_GET['page'] != 0 && is_numeric($_GET['page']) 
 $offset = ($page - 1) * $limit;
 
 $statement = $db->prepare("SELECT * FROM transfers WHERE `Parent` = :parent  AND `has_child` = :has_child 
- AND `Def` =:Def LIMIT :limit OFFSET :offset");
+ AND `Def` =:Def ORDER BY ID DESC LIMIT :limit OFFSET :offset");
 
 $rows = $db->execute($statement, [
     ':parent' => '0',
@@ -237,12 +237,23 @@ foreach($AI as $I){
          ':limit' => '1'
       ]);
       $rows = $rows->GetRows();
-      foreach ($rows as $row) {
+      foreach ($rows as $row) 
+      {
          $idd = $row["id"];
-         $statement1 = $db->prepare("UPDATE `transfers` SET `grid_id` = :grid_id WHERE id = '$idd'");
-         $db->execute($statement1, [
+         $Def = $row["Def"];
+         if($Def == 'Node') 
+         {
+            $statement1 = $db->prepare("UPDATE `transfers` SET `has_child` = :has_child WHERE id = '$idd' and `Def` = 'Node'");
+            $db->execute($statement1, [
+               ':has_child' => 1
+            ]);
+         } 
+         $statement2 = $db->prepare("UPDATE `transfers` SET `grid_id` = :grid_id WHERE id = '$idd'");
+         $db->execute($statement2, [
             ':grid_id' => $idd
          ]);
+         
+
       }
       }
 
